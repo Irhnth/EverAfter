@@ -1,0 +1,23 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /rsvps/{rsvpId} {
+      // Anyone can read wishes to display on the wishes wall
+      allow read: if true;
+
+      // Anyone can create an RSVP, provided it has valid required fields
+      allow create: if request.resource.data.guestName is string
+                    && request.resource.data.guestName.size() > 0
+                    && request.resource.data.guestName.size() <= 100
+                    && request.resource.data.attendance in ['hadir', 'berhalangan']
+                    && request.resource.data.guestCount is int
+                    && request.resource.data.guestCount >= 1
+                    && request.resource.data.guestCount <= 10
+                    && request.resource.data.message is string
+                    && request.resource.data.message.size() <= 500;
+
+      // Do not allow guests to update or delete others' messages from client
+      allow update, delete: if false;
+    }
+  }
+}
